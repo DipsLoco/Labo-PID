@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% if messages %}
+<div class="alert alert-info">
+    {% for message in messages %}
+    <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+{% block content %}
+<div class="container m-5">
+  <div class="row">
+    <div class="col-10">
+      <div class="card">
+        {% if show.image %}
+        <img src="../{{ show.image }}" class="card-img-top" alt="...">
+        {% else %}
+        <img src="{{ show.poster_url }}" class="card-img-top" alt="...">
+        {% endif %}
+        <div class="card-body">
+          <h3 class="card-title">{{ show.title }}</h3>
+          <p class="card-text">{{ show.description }}</p>
+          <p class="card-text"><strong>Prix:</strong> {{ show.price }} EUR</p>
+          {% if not user.is_authenticated %}
+          <a href="{% url 'login' %}" class="btn btn-info">Se connecter</a>
+          {% endif %}
+          {% if user.is_superuser %}
+          <a href="{{ show.id }}/editt" class="btn btn-info">Modifie</a>
+          {% endif %}
+          <hr/>
+          <h4>Commentaire:</h4>
+          {% for review in show.review_set.all %}
+            <div class="review">
+              <h4>{{ review.user.username }}</h4>
+              <p>{{ review.comment }}</p>
+              <p><strong>Étoiles:</strong> {{ review.stars }}</p>
+            </div>
+          {% empty %}
+            <p>Aucun commentaire pour le moment</p>
+          {% endfor %}
+          {% if user.is_authenticated %}
+            <h4>Mettre un commentaire:</h4>
+            <form method="POST" action="{% url 'create_review' show.id %}">
+              {% csrf_token %}
+              <textarea name="comment" placeholder="Ici votre commentaire" required></textarea>
+              <input type="number" name="stars" min="1" max="5" placeholder="etoile (1-5)" required>
+              <input type="submit" value="Submit">
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    
+{% endblock %}
